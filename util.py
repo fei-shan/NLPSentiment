@@ -1,3 +1,5 @@
+import os
+import glob
 import string
 import pandas as pd
 import nltk
@@ -9,12 +11,36 @@ nltk.download('stopwords')
 
 from config import (
     LOCAL_DATA_DIR,
-    IMDB_CSV,
+    IMDB_5K_CSV,
+    # IMDB_DATA_DIR
 )
+
+# def get_text_list_from_files(files):
+#     text_list = []
+#     for name in files:
+#         with open(name) as f:
+#             for line in f:
+#                 text_list.append(line)
+#     return text_list
+#
+#
+# def get_data_from_text_files(folder_name):
+#     pos_files = glob.glob(os.path.join(IMDB_DATA_DIR, folder_name, 'pos', '*.txt'))
+#     pos_texts = get_text_list_from_files(pos_files)
+#     neg_files = glob.glob(os.path.join(IMDB_DATA_DIR, folder_name, 'neg', '*.txt'))
+#     neg_texts = get_text_list_from_files(neg_files)
+#     df = pd.DataFrame(
+#         {
+#             "review": pos_texts + neg_texts,
+#             "sentiment": [0] * len(pos_texts) + [1] * len(neg_texts),
+#         }
+#     )
+#     df = df.sample(len(df)).reset_index(drop=True)
+#     return df
 
 
 def get_imdb_data():
-    imdb_df = pd.read_csv(IMDB_CSV)
+    imdb_df = pd.read_csv(IMDB_5K_CSV)
     imdb_df['tokenized'] = preprocess(imdb_df['review'])
     print(imdb_df)
     return imdb_df
