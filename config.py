@@ -1,8 +1,8 @@
 import os
 PROJECT_DIR = '.'
 LOCAL_DATA_DIR = os.path.join(PROJECT_DIR, 'data')
-IMDB_5K_CSV = os.path.join(LOCAL_DATA_DIR, 'IMDB Dataset.csv')
-# IMDB_DATA_DIR = os.path.join(LOCAL_DATA_DIR, 'acllmdb')
+IMDB_50K_CSV = os.path.join(LOCAL_DATA_DIR, 'IMDB Dataset.csv')
+# IMDB_DATA_DIR = os.path.join(LOCAL_DATA_DIR, 'aclImdb')
 
 
 STEREOSET_TERMS = {

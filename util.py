@@ -3,17 +3,20 @@ import glob
 import string
 import pandas as pd
 import nltk
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, MWETokenizer
 from nltk.corpus import stopwords
 
-nltk.download('punkt')
-nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('stopwords')
 
 from config import (
     LOCAL_DATA_DIR,
-    IMDB_5K_CSV,
-    # IMDB_DATA_DIR
+    IMDB_50K_CSV,
+    # IMDB_DATA_DIR,
+
+    STEREOSET_TERMS
 )
+
 
 # def get_text_list_from_files(files):
 #     text_list = []
@@ -40,25 +43,45 @@ from config import (
 
 
 def get_imdb_data():
-    imdb_df = pd.read_csv(IMDB_5K_CSV)
+    imdb_df = pd.read_csv(IMDB_50K_CSV)
+    # train_df = get_data_from_text_files('train')
+    # print(train_df)
+    # test_df = get_data_from_text_files('test')
+    # print(test_df)
+    # imdb_df = train_df.append(test_df)
     imdb_df['tokenized'] = preprocess(imdb_df['review'])
     print(imdb_df)
     return imdb_df
 
 
-def preprocess(series):
+def preprocess(series, get_stats=True):
     remove_words = {'br', 'nt'}
     stop_words = set(stopwords.words('english'))
     stop_words.update(remove_words)
 
+    multi_word_terms = set()
+    all_terms = set()
+    for key, cagetories in STEREOSET_TERMS.items():
+        for c in cagetories:
+            for s in c:
+                splitted = s.split('_')
+                all_terms.add(s)
+                if len(splitted) > 1: multi_word_terms.add(s)
+    print(f'multi-word terms: {multi_word_terms}')
+    mwe = MWETokenizer(multi_word_terms)
+
     punctuation_table = str.maketrans('', '', string.punctuation)
     tokenized = series.copy()
+
+    stats_df = pd.DataFrame(index=all_terms, columns=['occurrence'])
+    stats_df.fillna(0, inplace=True)
     max_len = 0
+    total_len = 0
     for i, s in series.items():
         # convert to lower case
         s = s.lower()
         # nltk tokenize
-        tokens = word_tokenize(s)
+        tokens = mwe.tokenize(word_tokenize(s))
         # remove punctuation from each token
         tokens = [w.translate(punctuation_table) for w in tokens]
         # remove stopwords
@@ -71,11 +94,18 @@ def preprocess(series):
         # tokens = 'startseq ' + ' '.join(tokens) + ' endseq'
         # get max length
         if len(tokens) > max_len: max_len = len(tokens)
+        total_len += len(tokens)
         # add to new pandas series
         tokenized[i] = tokens
+
+        if get_stats:
+            for m in all_terms:
+                if m in tokens:
+                    stats_df.at[m, 'occurrence'] += 1
+            stats_df['probability'] = stats_df['occurrence']/float(total_len)
     print(f'max length of tokens: {max_len}')
+    if get_stats: print(f'statistics: {stats_df}')
     return tokenized
-    # return series.apply(word_tokenize)
 
 
 if __name__ == '__main__':
