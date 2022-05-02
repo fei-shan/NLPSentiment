@@ -10,7 +10,7 @@ STEREOSET_TERMS = {
                 'daddy', 'groom', 'male', 'gentlemen', 'he', 'stepfather', 'boyfriend', 'him', 'his', 'sir'],
                ['woman', 'daughter', 'mother', 'girl', 'sister', 'grandmother', 'wife', 'schoolgirl', 'lady', 'herself',
                 'mommy', 'bride', 'female', 'ladies', 'she', 'stepmother', 'girlfriend', 'her', 'hers', 'ma_am']],  # male-female
-    'profession': [['barber'], ['coach'], ['businessperson'], ['football_player'], ['construction_worker'],
+    'profession': [['barber'], ['coach'], ['business_person'], ['football_player'], ['construction_worker'],
                    ['manager'], ['ceo'], ['accountant'], ['commander'], ['firefighter'], ['mover'],
                    ['software_developer'], ['guard'], ['baker'], ['doctor'], ['athlete'], ['artist'], ['dancer'],
                    ['mathematician'], ['janitor'], ['carpenter'], ['mechanic'], ['actor'], ['handyman'],
@@ -54,6 +54,8 @@ STEREOSET_TERMS = {
                  ['christian', 'church', 'bible', 'holy_trinity'],
                  ['hindu', 'brahmin']],  # islam-christian-hindu
 }
+
+MASK = '[MASK]'
 
 # from local_config import *
 
