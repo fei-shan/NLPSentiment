@@ -24,9 +24,12 @@ from config import (
 )
 
 
-def get_imdb_data(model_checkpoint='distilbert-base-uncased', apply_mask=True):
+def get_imdb_data(model_checkpoint='distilbert-base-uncased', apply_mask=True, load_data=False):
     # imdb_df = pd.read_csv(IMDB_50K_CSV)
     # imdb_df['tokenized'] = preprocess(imdb_df['review'])
+
+    if load_data:
+        return pd.read_csv('')
 
     imdb_dataset = load_dataset("imdb")
     train_df = imdb_dataset['train'].to_pandas()
@@ -48,7 +51,7 @@ def get_imdb_data(model_checkpoint='distilbert-base-uncased', apply_mask=True):
                         bias_terms.add(s)
         # combine two sets
         bias_terms.update(multi_word_bias_terms)
-        imdb_df['masked'] = preprocess_mask(series=imdb_df['text'], mask_terms=bias_terms)
+        imdb_df['masked'], imdb_df['ground_truth'] = preprocess_mask(series=imdb_df['text'], mask_terms=bias_terms)
     print(imdb_df)
 
     # tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
@@ -60,8 +63,11 @@ def preprocess_mask(series, mask_terms):
     # punctuation_table = str.maketrans('', '', string.punctuation)
 
     masked = series.copy()
+    ground_truth = pd.Series(index=series.index)
+
     for idx, s in masked.items():
         is_replaced = False
+        gt = []
         # convert to lower case
         s = s.lower()
         # nltk tokenize
@@ -69,14 +75,18 @@ def preprocess_mask(series, mask_terms):
         # remove punctuation from each token
         # tokens = [w.translate(punctuation_table) for w in tokens]
         for term in mask_terms:
+            # if is_replaced:
+            #     break
             if term in tokens:
                 for j in range(len(tokens)):
                     if term == tokens[j]:
+                        gt.append(tokens[j])
                         tokens[j] = MASK
                         is_replaced = True
                         # break
         masked[idx] = TreebankWordDetokenizer().detokenize(tokens) if is_replaced else pd.NA
-    return masked
+        ground_truth[idx] = ' '.join(gt) if is_replaced else pd.NA
+    return masked, ground_truth
 
 
 # def preprocess(series, get_stats=True):
