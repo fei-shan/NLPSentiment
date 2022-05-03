@@ -14,9 +14,9 @@ class Model:
         print(f'>>> BERT number of parameters: 110M')
 
     def predict(self, text):
-        print(f'Fill sentence: {text}')
+        print(f'>>> Fill sentence: {text}')
 
-        inputs = self.tokenizer(text, return_tensors='pt')
+        inputs = self.tokenizer(text, return_tensors='pt', truncation=True)
         token_logits = self.model(**inputs).logits
         # Find the location of [MASK] and extract its logits
         mask_token_index = torch.where(inputs['input_ids'] == self.tokenizer.mask_token_id)[1]

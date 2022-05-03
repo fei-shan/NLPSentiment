@@ -20,7 +20,8 @@ from config import (
     IMDB_50K_CSV,
     # IMDB_DATA_DIR,
     MASK,
-    STEREOSET_TERMS
+    STEREOSET_TERMS,
+    MASKED_IMDB_CSV
 )
 
 
@@ -29,7 +30,7 @@ def get_imdb_data(model_checkpoint='distilbert-base-uncased', apply_mask=True, l
     # imdb_df['tokenized'] = preprocess(imdb_df['review'])
 
     if load_data:
-        return pd.read_csv('')
+        return pd.read_csv(MASKED_IMDB_CSV)
 
     imdb_dataset = load_dataset("imdb")
     train_df = imdb_dataset['train'].to_pandas()
@@ -55,7 +56,9 @@ def get_imdb_data(model_checkpoint='distilbert-base-uncased', apply_mask=True, l
     print(imdb_df)
 
     # tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    return imdb_df[imdb_df['masked'].notnull()] if apply_mask else imdb_df
+    masked_imdb_df = imdb_df[imdb_df['masked'].notnull()] if apply_mask else imdb_df
+    masked_imdb_df.to_csv(MASKED_IMDB_CSV)
+    return masked_imdb_df
 
 
 def preprocess_mask(series, mask_terms):
@@ -69,21 +72,16 @@ def preprocess_mask(series, mask_terms):
         is_replaced = False
         gt = []
         # convert to lower case
-        s = s.lower()
+        s = s.lower().replace('<br />', '')
         # nltk tokenize
         tokens = mwe.tokenize(word_tokenize(s))
         # remove punctuation from each token
         # tokens = [w.translate(punctuation_table) for w in tokens]
-        for term in mask_terms:
-            # if is_replaced:
-            #     break
-            if term in tokens:
-                for j in range(len(tokens)):
-                    if term == tokens[j]:
-                        gt.append(tokens[j])
-                        tokens[j] = MASK
-                        is_replaced = True
-                        # break
+        for j in range(len(tokens)):
+            if tokens[j] in mask_terms:
+                gt.append(tokens[j])
+                tokens[j] = MASK
+                is_replaced = True
         masked[idx] = TreebankWordDetokenizer().detokenize(tokens) if is_replaced else pd.NA
         ground_truth[idx] = ' '.join(gt) if is_replaced else pd.NA
     return masked, ground_truth
