@@ -18,13 +18,16 @@ def predict(take_samples=False):
     if take_samples:
         # Sample five reviews
         predict_df = predict_df.sample(
-                                        # n=5,
+                                        n=10,
                                         random_state=1,
                                         # random_state=50,
-                                        frac=0.0001
+                                        # frac=0.0001
                                         )
         # .reset_index(drop=True)
     for idx, row in predict_df.iterrows():
+        if idx % 1000 == 0:
+            print(f'>>>Processed {idx//1000}k reviews')
+            print(f'>>>Example: {row["masked"]}')
         predict_df.at[idx, 'prediction'] = ' '.join(model.predict(row['masked']))
     print(predict_df)
 

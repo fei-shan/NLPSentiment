@@ -30,7 +30,9 @@ def get_imdb_data(model_checkpoint='distilbert-base-uncased', apply_mask=True, l
     # imdb_df['tokenized'] = preprocess(imdb_df['review'])
 
     if load_data:
-        return pd.read_csv(MASKED_IMDB_CSV)
+        df = pd.read_csv(MASKED_IMDB_CSV)
+        df.rename(columns={df.columns[0]: 'original_index'}, inplace=True)
+        return df
 
     imdb_dataset = load_dataset("imdb")
     train_df = imdb_dataset['train'].to_pandas()
@@ -71,8 +73,10 @@ def preprocess_mask(series, mask_terms):
     for idx, s in masked.items():
         is_replaced = False
         gt = []
-        # convert to lower case
+        # Convert to lower case
         s = s.lower().replace('<br />', '')
+        # Remove duplicate punctuations
+        s = re.sub(r'(?<=[^!.,>$%&-][!.,>$%&-])[!.,>$%& -]+(?<! )', '', s)
         # nltk tokenize
         tokens = mwe.tokenize(word_tokenize(s))
         # remove punctuation from each token
@@ -82,7 +86,9 @@ def preprocess_mask(series, mask_terms):
                 gt.append(tokens[j])
                 tokens[j] = MASK
                 is_replaced = True
-        masked[idx] = TreebankWordDetokenizer().detokenize(tokens) if is_replaced else pd.NA
+        masked[idx] = TreebankWordDetokenizer().detokenize(tokens)\
+            .replace('\\" ', '``').replace('"', '" ').replace('``', ' "').replace(' .', '.') \
+            if is_replaced else pd.NA
         ground_truth[idx] = ' '.join(gt) if is_replaced else pd.NA
     return masked, ground_truth
 
