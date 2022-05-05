@@ -87,7 +87,7 @@ def preprocess_mask(series, mask_terms):
                 tokens[j] = MASK
                 is_replaced = True
         masked[idx] = TreebankWordDetokenizer().detokenize(tokens)\
-            .replace('\\" ', '``').replace('"', '" ').replace('``', ' "').replace(' .', '.') \
+            .replace('\\" ', '``').replace('``', '"').replace(' .', '.') \
             if is_replaced else pd.NA
         ground_truth[idx] = ' '.join(gt) if is_replaced else pd.NA
     return masked, ground_truth
